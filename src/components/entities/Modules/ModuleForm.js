@@ -2,61 +2,67 @@ import useFetch  from '../../api/useFetch.js';
 import Form from '../../UI/Form.js';
 
 
-export default function ModuleForm({ onSubmit, onCancel, initialModule=null }) {
-  // Initialisation ----------------------------------
-  const endpoint = "Users";
-  const method = "GET";
+const emptyModule = {
+  ModuleName: "Programming 3",
+  ModuleCode: "CI6001",
+  ModuleLevel: 0,
+  ModuleLeaderID: 0,
+  ModuleImage: "https://images.freeimages.com/images/small-previews/fa1/cable-5-1243077.jpg"
+};
 
-  if (!initialModule) {
-    initialModule = {
-      ModuleName: "Programming 3",
-      ModuleCode: "CI6001",
-      ModuleLevel: 0,
-      ModuleLeaderID: 0,
-      ModuleImage: "https://images.freeimages.com/images/small-previews/fa1/cable-5-1243077.jpg"
-    }
-  }
-
-  // State ---------------------------------------
-  const [module, handleChange, errors, updateErrors] = Form.useFormState(initialModule);
-  const [users, , loadingMessage] = useFetch(endpoint,method);
+export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyModule }) {
   
-  // Methods -------------------------------------
+  // State ---------------------------------------
+  const [module, setModule, errors, setErrors] = Form.useFormState(initialModule);
+  
+  // Handlers ------------------------------------
   const handleSubmit = (event) => {
     event.preventDefault();
-
-    const isValidName = isValidateModuleName();
-    const isValidCode = isValidateModuleCode();
-    const isValidYear = isValidateModuleLevel();
-    const isValidLead = isValidateModuleLeader();
-    const isValidImage = isValidateModuleImage();
-
-    updateErrors({
-      ModuleName: isValidName ? null : "Module name is too short",
-      ModuleCode: isValidCode ? null : "Module code is not a valid format",
-      ModuleLevel: isValidYear ? null : "Invalid module level",
-      ModuleLeaderID: isValidLead ? null : "No module leader has been selected",
-      ModuleImage: isValidImage ? null : "Module image is not a valid URL"
-    });
-
-    if (isValidName && isValidCode && isValidYear && isValidLead && isValidImage) {
-      module.ModuleLevel = parseInt(module.ModuleLevel);
-      module.ModuleLeaderID = parseInt(module.ModuleLeaderID);
-      onSubmit(module);
-    }
+    if (isValidateModule(module)) onSubmit(module);
   }
 
-  const isValidateModuleName = () => module.ModuleName.length > 8 ? true : false;
-  const isValidateModuleCode = () => isValidModuleCode(module.ModuleCode) ? true : false;
-  const isValidateModuleLevel = () => ((module.ModuleLevel > 2) && (module.ModuleLevel < 8)) ? true : false;
-  const isValidateModuleLeader = () => parseInt(module.ModuleLeaderID) ? true : false;
-  const isValidateModuleImage = () => isValidURL(module.ModuleImage) ? true : false;
-  const isValidModuleCode = (value) => (/^\D{2}\d{4}$/.test(value));
-  const isValidURL = (value) => (/^(http|https):\/\/(([a-zA-Z0-9$\-_.+!*'(),;:&=]|%[0-9a-fA-F]{2})+@)?(((25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])(\.(25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])){3})|localhost|([a-zA-Z0-9\-\u00C0-\u017F]+\.)+([a-zA-Z]{2,}))(:[0-9]+)?(\/(([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*(\/([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*)*)?(\?([a-zA-Z0-9$\-_.+!*'(),;:@&=/?]|%[0-9a-fA-F]{2})*)?(#([a-zA-Z0-9$\-_.+!*'(),;:@&=/?]|%[0-9a-fA-F]{2})*)?)?$/.test(value));
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setModule({ ...module, [name]: value });
+    setErrors({ ...errors, [name]: isValid[name](value) ? null : errorMessage[name] });
+  };
+
+  const isValidateModule = (module) => {
+    let isModuleValid = true;
+    Object.keys(module).forEach((key) => {
+      if (isValid[key](module[key])) {
+        errors[key] = null;
+      } else {
+        errors[key] = errorMessage[key];
+        isModuleValid = false;
+      }
+    });
+    setErrors(errors);
+    return isModuleValid;
+  }
+  
+  const isValid = {
+    ModuleName: (name) => name.length > 8,
+    ModuleCode: (code) => /^\D{2}\d{4}$/.test(code),
+    ModuleLevel: (level) => (level > 2) && (level < 8),
+    ModuleLeaderID: (id) => id !== 0,
+    ModuleImage: (url) => /^(http|https):\/\/(([a-zA-Z0-9$\-_.+!*'(),;:&=]|%[0-9a-fA-F]{2})+@)?(((25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])(\.(25[0-5]|2[0-4][0-9]|[0-1][0-9][0-9]|[1-9][0-9]|[0-9])){3})|localhost|([a-zA-Z0-9\-\u00C0-\u017F]+\.)+([a-zA-Z]{2,}))(:[0-9]+)?(\/(([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*(\/([a-zA-Z0-9$\-_.+!*'(),;:@&=]|%[0-9a-fA-F]{2})*)*)?(\?([a-zA-Z0-9$\-_.+!*'(),;:@&=/?]|%[0-9a-fA-F]{2})*)?(#([a-zA-Z0-9$\-_.+!*'(),;:@&=/?]|%[0-9a-fA-F]{2})*)?)?$/.test(url)
+  };
+    
+  const errorMessage = {
+    ModuleName: "Module name is too short",
+    ModuleCode: "Module code is not a valid format",
+    ModuleLevel: "Invalid module level",
+    ModuleLeaderID: "No module leader has been selected",
+    ModuleImage: "Module image is not a valid URL"
+  }
+
+  // API Calls -----------------------------------
+  const [users, , loadingMessage] = useFetch("Users", "GET");
 
   // View ----------------------------------------
   return (
-    <Form onSubmit={handleSubmit} onChange={handleChange} onCancel={onCancel} >
+    <Form onSubmit={handleSubmit} onCancel={onCancel} >
       <Form.Item
         label="Module name"
         error={errors.ModuleName}
@@ -66,7 +72,8 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule=null }) {
           name="ModuleName"
           placeholder="Please enter the module name"
           value={module.ModuleName}
-        />
+          onChange={handleChange} 
+        /> 
       </Form.Item>
       
       <Form.Item
@@ -78,6 +85,7 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule=null }) {
           name="ModuleCode"
           placeholder="Please enter the module code"
           value={module.ModuleCode}
+          onChange={handleChange} 
         />
       </Form.Item>
 
@@ -86,11 +94,16 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule=null }) {
         advice="Choose a level between 3 and 7 inclusive"
         error={errors.ModuleLevel}
       >
-        <input
-          type="number"
+        <select
           name="ModuleLevel"
           value={module.ModuleLevel}
-        />
+          onChange={handleChange} 
+        >
+          <option value="0" disabled>Select module level</option>
+          {
+            [3, 4, 5, 6, 7].map((level) => <option>{level}</option>)
+          }
+        </select>
       </Form.Item>
 
       <Form.Item
@@ -105,6 +118,7 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule=null }) {
               : <select
                   name="ModuleLeaderID"
                   value={module.ModuleLeaderID}
+                  onChange={handleChange} 
                 >
                   <option value="0">Select module leader ...</option>
                   {
@@ -127,6 +141,7 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule=null }) {
           type="text"
           name="ModuleImage"
           value={module.ModuleImage}
+          onChange={handleChange} 
         />
       </Form.Item>
 

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState, useRef, useLayoutEffect } from 'react';
+import { useState } from 'react';
 import useDimensions from '../utils/useDimensions.js';
 import HoverDecorator from './HoverDecorator.js';
 import { Card } from './Card.js';

@@ -5,9 +5,9 @@ CardContainer.propTypes = {
   className: PropTypes.string
 };
 
-export function CardContainer({ children, className }) {
+export function CardContainer({ children, className="" }) {
   return (
-    <div className={"CardContainer "+className}>
+    <div className={"CardContainer " + className}>
       {children}
     </div>
   );
@@ -25,7 +25,7 @@ export function Card({ children, onClick, isParentHovering=false }) {
   // Methods -------------------------------------
   // View ----------------------------------------
   return (
-    <div className={"Card " + (isParentHovering && "Hovering")} onClick={onClick}>
+    <div className={"Card" + (isParentHovering ? " Hovering" : "")} onClick={onClick}>
       {children}
     </div>
   );
