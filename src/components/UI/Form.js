@@ -8,11 +8,10 @@ import './Form.scss';
 
 Form.propTypes = {
   onSubmit: PropTypes.func.isRequired,
-  onChange: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired
 };
 
-export default function Form({ children, onSubmit, onChange, onCancel }) {
+export default function Form({ children, onSubmit, onCancel }) {
   // Properties ----------------------------------
   // Hooks ---------------------------------------
   // Context -------------------------------------
@@ -21,12 +20,7 @@ export default function Form({ children, onSubmit, onChange, onCancel }) {
   return (
     <form onSubmit={onSubmit} className="Form Bordered">
       <div className="FormTray">
-        {
-          // children.map((item) => item)
-          React.Children.map(children, (child) => {
-            return React.cloneElement(child, { onChange: onChange });
-           })
-        }
+        {children}
       </div>
       <Action.Tray>
         <Action.Submit showText onClick={onSubmit} />
@@ -59,8 +53,7 @@ function Item({ children, label, advice=null, error=null, onChange }) {
       {
         React.cloneElement(children, {
           id: htmlFor,
-          className: "FormInput " + (error && "FormError"),
-          onChange: onChange
+          className: "FormInput" + (error ? " FormError" : "")
         })
       }
       {
@@ -70,21 +63,19 @@ function Item({ children, label, advice=null, error=null, onChange }) {
   );
 }
 
-const useFormState = (initialFormObject) => {
-
-  if (!initialFormObject || (initialFormObject === {}))
-    throw new Error("[useFormState] Inital form object with keys must be provided");
+const useFormState = ( initialObject ) => {
+  // Validate ------------------------------------
+  if (!initialObject || (initialObject === {}))
+    throw new Error("[useFormState] Initial form object with keys must be provided");
     
-  // Form State ----------------------------------
-  const [formObject, setFormObject] = useState(initialFormObject);
+  // State ---------------------------------------
+  const [formObject, setFormObject] = useState(initialObject);
   const [errorObject, setErrorObject] = useState(
-    Object.keys(initialFormObject).reduce((accum, key) => ({ ...accum, [key]: null }), {}));
+    Object.keys(initialObject).reduce((accum, key) => ({ ...accum, [key]: null }), {})
+  );
 
-  // State Modifier ------------------------------
-  const handleChange = (event) => setFormObject({ ...formObject, [event.target.name]: event.target.value });
-  
   // Return --------------------------------------
-  return [formObject, handleChange, errorObject, setErrorObject ];
+  return [formObject, setFormObject, errorObject, setErrorObject];
 }
 
 // -----------------------------------------
