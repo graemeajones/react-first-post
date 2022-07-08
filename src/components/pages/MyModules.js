@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import useFetch  from '../api/useFetch.js';
+import { useState,useEffect } from 'react';
+import API from '../api/API.js';
+import { getModules } from '../entities/Modules/apiModules.js';
 import { CardContainer } from '../UI/Card.js';
 import ModuleCard from '../entities/Modules/ModuleCard.js';
 import ModuleForm from '../entities/Modules/ModuleForm.js';
@@ -12,7 +13,8 @@ import './MyModules.css';
 export default function MyModules() {
   // Properties ----------------------------------
   // State ---------------------------------------
-  const [modules, setModules, loadingMessage] = useFetch("Modules", "GET");
+  const [loadingMessage, setLoadingMessage] = useState("Loading records ...");
+  const [modules, setModules] = useState(undefined);
   const [showFavourites, setShowFavourites] = useState(false);
 
   const [showModal, setShowModal] = useState(false);
@@ -20,8 +22,17 @@ export default function MyModules() {
   const [modalContent, setModalContent] = useState(undefined);
   const [modalActions, setModalActions] = useState([]);
 
+  useEffect(() => {
+    fetchObjects();
+  }, []);
+
   // Context -------------------------------------
   // Methods -------------------------------------
+  const fetchObjects = async () => {
+    const outcome = await API.get('Modules');
+    if (outcome.success) setModules(outcome.response);
+    else setLoadingMessage(`Error ${outcome.response.status}: Data could not be found.`);
+  };
 
   // Select handler
   const handleSelect = (name) => console.log(`Module ${name} selected`);
@@ -64,9 +75,16 @@ export default function MyModules() {
 
   // Add handlers
   const handleAdd = (newModule) => {
-    newModule.ModuleID = 1 + Math.max(...modules.map(module => module.ModuleID));
-    setModules([...modules, newModule]);
+    postModule(newModule);
     setShowModal(false);
+    fetchObjects();
+  }
+
+  const postModule = async (newModule) => {
+    newModule.ModuleCohortID = 1;
+    newModule.ModuleLeaderID = 820;
+    const outcome = await API.post('Modules', newModule);
+    return outcome.success;
   }
 
   const handleAddRequest = () => {

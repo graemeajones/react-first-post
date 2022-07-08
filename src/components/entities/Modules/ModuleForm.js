@@ -18,26 +18,27 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyMo
   // Handlers ------------------------------------
   const handleSubmit = (event) => {
     event.preventDefault();
-    if (isValidateModule(module)) onSubmit(module);
+    isValidateModule(module) && onSubmit(module);
+    setErrors({ ...errors }); // setErrors(errors) does not work; perhaps React thinks errors has not changed?
   }
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setModule({ ...module, [name]: value });
-    setErrors({ ...errors, [name]: isValid[name](value) ? null : errorMessage[name] });
+    const newValue = (name === 'ModuleLevel') || (name === 'ModuleLeaderID') ? parseInt(value) : value;
+    setModule({ ...module, [name]: newValue });
+    setErrors({ ...errors, [name]: isValid[name](newValue) ? null : errorMessage[name] });
   };
 
   const isValidateModule = (module) => {
     let isModuleValid = true;
     Object.keys(module).forEach((key) => {
       if (isValid[key](module[key])) {
-        errors[key] = null;
+        errors[key] = null; // Am I naughty to use the state variable as a temporary variable? See line 22 "setErrors({ ...errors })"
       } else {
         errors[key] = errorMessage[key];
         isModuleValid = false;
       }
     });
-    setErrors(errors);
     return isModuleValid;
   }
   
@@ -101,7 +102,7 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyMo
         >
           <option value="0" disabled>Select module level</option>
           {
-            [3, 4, 5, 6, 7].map((level) => <option>{level}</option>)
+            [3, 4, 5, 6, 7].map((level) => <option key={level}>{level}</option>)
           }
         </select>
       </Form.Item>
@@ -124,7 +125,7 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyMo
                   {
                     users.map((user) => 
                       <option key={user.UserID} value={user.UserID} >
-                        {user.UserLastname}, {user.UserFirstname}
+                        {user.UserSurname}, {user.UserFirstname}
                       </option>
                     )
                   }
