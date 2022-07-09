@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import modelModules from '../entities/Modules/modelModules.js';
+import moduleAccessor from '../entities/Modules/moduleAccessor.js';
 import { CardContainer } from '../UI/Card.js';
 import ModuleCard from '../entities/Modules/ModuleCard.js';
 import ModuleForm from '../entities/Modules/ModuleForm.js';
@@ -16,13 +16,15 @@ export default function MyModules() {
   const [loadingMessage, setLoadingMessage] = useState("Loading records ...");
   const [showFavourites, setShowFavourites] = useState(false);
 
-  async function fetchModules() {
-    const outcome = await modelModules.list();
-    if (outcome.success) setModules(outcome.response);
-    else setLoadingMessage(`Error ${outcome.response.status}: Data could not be found.`);
+  const loadModules = () => {
+    moduleAccessor.list()
+      .then(outcome => (outcome.success) 
+        ? setModules(outcome.response)
+        : setLoadingMessage(`Error ${outcome.response}: Data could not be found.`)
+      );
   };
 
-  useEffect(() => fetchModules(), []);
+  useEffect( () => loadModules(), []);
 
   const [showModal, setShowModal] = useState(false);
   const [modalHeading, setModalHeading] = useState(undefined);
@@ -50,8 +52,8 @@ export default function MyModules() {
   // Delete handlers
   const handleDelete = async (id) => {
     handleDismiss();
-    const outcome = await modelModules.delete(id);
-    outcome.success && fetchModules();
+    const outcome = await moduleAccessor.delete(id);
+    outcome.success && loadModules();
   }
 
   const handleDeleteRequest = (id) => {
@@ -74,10 +76,10 @@ export default function MyModules() {
   // Add handlers
   const handleAdd = async (newModule) => {
     handleDismiss();
-    newModule.ModuleCohortID = 1;
-    newModule.ModuleLeaderID = 820;
-    const outcome = await modelModules.create(newModule);
-    outcome.success && fetchModules();
+    newModule.ModuleCohortID = 1; // Todo: This needs removing
+    newModule.ModuleLeaderID = 820; // Todo: This needs removing
+    const outcome = await moduleAccessor.create(newModule);
+    outcome.success && loadModules();
   }
 
   const handleAddRequest = () => {
@@ -88,10 +90,12 @@ export default function MyModules() {
   };
 
   // Modify handlers
-  const handleModify = (targetModule) => {
-    const targetIndex = modules.findIndex(module => module.ModuleID === targetModule.ModuleID);
-    setModules(modules.map((module, index) => index === targetIndex ? targetModule : module));
-    setShowModal(false);
+  const handleModify = async (targetModule) => {
+    handleDismiss();
+    delete targetModule.ModuleCohort; // Todo: This needs removing
+    delete targetModule.ModuleLead; // Todo: This needs removing
+    const outcome = await moduleAccessor.update(targetModule.ModuleID, targetModule);
+    outcome.success && loadModules();
   }
 
   const handleModifyRequest = (targetModule) => {

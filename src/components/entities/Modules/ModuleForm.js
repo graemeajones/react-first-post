@@ -1,19 +1,26 @@
-import useFetch  from '../../api/useFetch.js';
+import { useState, useEffect } from 'react';
+import userAccessor from '../Users/userAccessor.js';
 import Form from '../../UI/Form.js';
 
 
-const emptyModule = {
-  ModuleName: "Programming 3",
-  ModuleCode: "CI6001",
-  ModuleLevel: 0,
-  ModuleLeaderID: 0,
-  ModuleImage: "https://images.freeimages.com/images/small-previews/fa1/cable-5-1243077.jpg"
-};
+const emptyModule = { ModuleName: "", ModuleCode: "", ModuleLevel: 0, ModuleLeaderID: 0, ModuleImage: "" };
 
 export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyModule }) {
   
   // State ---------------------------------------
   const [module, setModule, errors, setErrors] = Form.useFormState(initialModule);
+  const [staff, setStaff] = useState(null);
+  const [loadingMessage, setLoadingMessage] = useState("Loading records ...");
+
+  const loadStaff = () => {
+    userAccessor.list()
+      .then(outcome => (outcome.success) 
+        ? setStaff(outcome.response)
+        : setLoadingMessage(`Error ${outcome.response}: Data could not be found.`)
+      );
+  };
+
+  useEffect(() => loadStaff(), []);
   
   // Handlers ------------------------------------
   const handleSubmit = (event) => {
@@ -31,7 +38,7 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyMo
 
   const isValidateModule = (module) => {
     let isModuleValid = true;
-    Object.keys(module).forEach((key) => {
+    Object.keys(isValid).forEach((key) => {
       if (isValid[key](module[key])) {
         errors[key] = null; // Am I naughty to use the state variable as a temporary variable? See line 22 "setErrors({ ...errors })"
       } else {
@@ -57,9 +64,6 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyMo
     ModuleLeaderID: "No module leader has been selected",
     ModuleImage: "Module image is not a valid URL"
   }
-
-  // API Calls -----------------------------------
-  const [users, , loadingMessage] = useFetch("Users", "GET");
 
   // View ----------------------------------------
   return (
@@ -112,9 +116,9 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyMo
         error={errors.ModuleLeaderID}
       >
         {
-          !users
+          !staff
             ? <p>{loadingMessage}</p>
-            : users.length === 0
+            : staff.length === 0
               ? <p>No users found</p>
               : <select
                   name="ModuleLeaderID"
@@ -123,7 +127,7 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyMo
                 >
                   <option value="0">Select module leader ...</option>
                   {
-                    users.map((user) => 
+                    staff.map((user) => 
                       <option key={user.UserID} value={user.UserID} >
                         {user.UserSurname}, {user.UserFirstname}
                       </option>
