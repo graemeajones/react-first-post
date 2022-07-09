@@ -1,6 +1,5 @@
-import { useState,useEffect } from 'react';
-import API from '../api/API.js';
-import { getModules } from '../entities/Modules/apiModules.js';
+import { useState, useEffect } from 'react';
+import modelModules from '../entities/Modules/modelModules.js';
 import { CardContainer } from '../UI/Card.js';
 import ModuleCard from '../entities/Modules/ModuleCard.js';
 import ModuleForm from '../entities/Modules/ModuleForm.js';
@@ -13,27 +12,25 @@ import './MyModules.css';
 export default function MyModules() {
   // Properties ----------------------------------
   // State ---------------------------------------
-  const [loadingMessage, setLoadingMessage] = useState("Loading records ...");
   const [modules, setModules] = useState(undefined);
+  const [loadingMessage, setLoadingMessage] = useState("Loading records ...");
   const [showFavourites, setShowFavourites] = useState(false);
+
+  async function fetchModules() {
+    const outcome = await modelModules.list();
+    if (outcome.success) setModules(outcome.response);
+    else setLoadingMessage(`Error ${outcome.response.status}: Data could not be found.`);
+  };
+
+  useEffect(() => fetchModules(), []);
 
   const [showModal, setShowModal] = useState(false);
   const [modalHeading, setModalHeading] = useState(undefined);
   const [modalContent, setModalContent] = useState(undefined);
   const [modalActions, setModalActions] = useState([]);
 
-  useEffect(() => {
-    fetchObjects();
-  }, []);
-
   // Context -------------------------------------
   // Methods -------------------------------------
-  const fetchObjects = async () => {
-    const outcome = await API.get('Modules');
-    if (outcome.success) setModules(outcome.response);
-    else setLoadingMessage(`Error ${outcome.response.status}: Data could not be found.`);
-  };
-
   // Select handler
   const handleSelect = (name) => console.log(`Module ${name} selected`);
 
@@ -51,9 +48,10 @@ export default function MyModules() {
   );
 
   // Delete handlers
-  const handleDelete = (id) => {
-    setModules(modules.filter((module) => module.ModuleID !== id));
+  const handleDelete = async (id) => {
     handleDismiss();
+    const outcome = await modelModules.delete(id);
+    outcome.success && fetchModules();
   }
 
   const handleDeleteRequest = (id) => {
@@ -74,17 +72,12 @@ export default function MyModules() {
   };
 
   // Add handlers
-  const handleAdd = (newModule) => {
-    postModule(newModule);
-    setShowModal(false);
-    fetchObjects();
-  }
-
-  const postModule = async (newModule) => {
+  const handleAdd = async (newModule) => {
+    handleDismiss();
     newModule.ModuleCohortID = 1;
     newModule.ModuleLeaderID = 820;
-    const outcome = await API.post('Modules', newModule);
-    return outcome.success;
+    const outcome = await modelModules.create(newModule);
+    outcome.success && fetchModules();
   }
 
   const handleAddRequest = () => {
