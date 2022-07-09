@@ -7,7 +7,7 @@ API.post = (endpoint, data) => apiCall(endpoint, 'POST', data);
 API.put = (endpoint, data) => apiCall(endpoint, 'PUT', data);
 API.delete = (endpoint) => apiCall(endpoint, 'DELETE', null);
 
-const apiCall = async (endpoint, method, body) => {
+export const apiCall = async (endpoint, method, body) => {
 
   // Build request object
   let requestObj = { method: method }; // *GET, POST, PUT, DELETE, etc.
