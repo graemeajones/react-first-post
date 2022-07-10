@@ -51,9 +51,11 @@ function Item({ children, label, advice=null, error=null, onChange }) {
         advice && <p className="FormAdvice">{advice}</p>
       }
       {
-        React.cloneElement(children, {
-          id: htmlFor,
-          className: "FormInput" + (error ? " FormError" : "")
+        React.Children.map(children, (child) => {
+          return React.cloneElement(child, {
+            id: htmlFor,
+            className: "FormInput" + (error ? " FormError" : "")
+          });
         })
       }
       {

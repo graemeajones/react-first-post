@@ -1,4 +1,4 @@
-import API from '../../api/API.js';
+import API from '../api/API.js';
 
 const userAccessor = {}; 
 userAccessor.create = (user) => API.post('Users',user);

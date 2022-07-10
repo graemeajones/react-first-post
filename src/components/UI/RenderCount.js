@@ -1,9 +1,9 @@
 import { useRef } from 'react';
 import Badge from './Badge.js';
 
-const renderCountStyling = { position: "relative" };
+const renderCountStyling = { position: "absolute" };
 
-export default function RenterCount({background}) {
+export default function RenderCount({background="Cyan",fontColor="White"}) {
   // Properies -----------------------------------
   // Hooks ---------------------------------------
   const renderCount = useRef(0);
@@ -12,7 +12,7 @@ export default function RenterCount({background}) {
   // View ----------------------------------------
   return (
     <div style={renderCountStyling}>
-      <Badge background={background}>
+      <Badge background={background} fontColor={fontColor}>
         {renderCount.current}
       </Badge>
     </div>
