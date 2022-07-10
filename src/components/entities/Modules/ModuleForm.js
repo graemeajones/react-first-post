@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
-import userAccessor from '../Users/userAccessor.js';
+import userAccessor from '../../model/userAccessor.js';
+import useLoad from '../../model/useLoad.js';
 import Form from '../../UI/Form.js';
+
+import RenderCount from '../../UI/RenderCount.js';
 
 
 const emptyModule = { ModuleName: "", ModuleCode: "", ModuleLevel: 0, ModuleLeaderID: 0, ModuleImage: "" };
@@ -9,18 +11,7 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyMo
   
   // State ---------------------------------------
   const [module, setModule, errors, setErrors] = Form.useFormState(initialModule);
-  const [staff, setStaff] = useState(null);
-  const [loadingMessage, setLoadingMessage] = useState("Loading records ...");
-
-  const loadStaff = () => {
-    userAccessor.list()
-      .then(outcome => (outcome.success) 
-        ? setStaff(outcome.response)
-        : setLoadingMessage(`Error ${outcome.response}: Data could not be found.`)
-      );
-  };
-
-  useEffect(() => loadStaff(), []);
+  const [staff, ,loadingMessage, ] = useLoad(userAccessor);
   
   // Handlers ------------------------------------
   const handleSubmit = (event) => {
@@ -40,7 +31,7 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyMo
     let isModuleValid = true;
     Object.keys(isValid).forEach((key) => {
       if (isValid[key](module[key])) {
-        errors[key] = null; // Am I naughty to use the state variable as a temporary variable? See line 22 "setErrors({ ...errors })"
+        errors[key] = null; // Am I naughty to use the state variable as a temporary variable? See line 18 "setErrors({ ...errors })"
       } else {
         errors[key] = errorMessage[key];
         isModuleValid = false;
@@ -68,10 +59,12 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyMo
   // View ----------------------------------------
   return (
     <Form onSubmit={handleSubmit} onCancel={onCancel} >
+      <RenderCount />
       <Form.Item
         label="Module name"
         error={errors.ModuleName}
       >
+        <RenderCount background="Yellow" fontColor="Black"/>
         <input
           type="text"
           name="ModuleName"
@@ -85,6 +78,7 @@ export default function ModuleForm({ onSubmit, onCancel, initialModule = emptyMo
         label="Module code"
         error={errors.ModuleCode}
       >
+        <RenderCount background="Orange" fontColor="Black"/>
         <input
           type="text"
           name="ModuleCode"

@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
-import moduleAccessor from '../entities/Modules/moduleAccessor.js';
+import { useState } from 'react';
+import moduleAccessor from '../model/moduleAccessor.js';
+import useLoad from '../model/useLoad.js';
 import { CardContainer } from '../UI/Card.js';
 import ModuleCard from '../entities/Modules/ModuleCard.js';
 import ModuleForm from '../entities/Modules/ModuleForm.js';
@@ -8,24 +9,17 @@ import Action from '../UI/Actions.js';
 import Modal from '../UI/Modal.js';
 import './MyModules.css';
 
+import RenderCount from '../UI/RenderCount.js';
+
+// THIS FILE CONTAINS TODOs!!
+
 
 export default function MyModules() {
   // Properties ----------------------------------
   // State ---------------------------------------
-  const [modules, setModules] = useState(undefined);
-  const [loadingMessage, setLoadingMessage] = useState("Loading records ...");
   const [showFavourites, setShowFavourites] = useState(false);
-
-  const loadModules = () => {
-    moduleAccessor.list()
-      .then(outcome => (outcome.success) 
-        ? setModules(outcome.response)
-        : setLoadingMessage(`Error ${outcome.response}: Data could not be found.`)
-      );
-  };
-
-  useEffect( () => loadModules(), []);
-
+  const [modules, setModules, loadingMessage, loadModules] = useLoad(moduleAccessor);
+  
   const [showModal, setShowModal] = useState(false);
   const [modalHeading, setModalHeading] = useState(undefined);
   const [modalContent, setModalContent] = useState(undefined);
@@ -111,6 +105,7 @@ export default function MyModules() {
   // View ----------------------------------------
   return (
     <>
+      <RenderCount background="Red" />
       <h1>My Modules</h1>
 
       <Action.Tray>

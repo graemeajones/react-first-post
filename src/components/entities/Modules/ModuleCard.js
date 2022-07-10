@@ -6,6 +6,8 @@ import ToolTipDecorator from '../../UI/ToolTipDecorator.js';
 import Action from '../../UI/Actions.js';
 import './ModuleCard.scss';
 
+import RenderCount from '../../UI/RenderCount.js';
+
 
 ModuleCard.propTypes = {
   module: PropTypes.shape({
@@ -34,6 +36,7 @@ export default function ModuleCard({module,handlers}) {
   return (
     <HoverDecorator>
       <Card>
+      <RenderCount background='Blue' />
         
         <FavouriteDecorator
             isFavourite={module.isSubscribed}

@@ -1,4 +1,4 @@
-import API from '../../api/API.js';
+import API from '../api/API.js';
 
 const moduleAccessor = {}; 
 moduleAccessor.create = (module) => API.post('Modules', module);
